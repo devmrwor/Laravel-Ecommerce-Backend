@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
-{
+{   
+    /* Get All Users */
     public function getAllUsers(){
         $users = User::get();
         foreach($users as $user){
@@ -18,6 +19,7 @@ class UserController extends Controller
         return response()->json($users, 200);
     }
 
+    /* Update User Data */
     public function updateUser($id, Request $request){
         $user = $this->requestDataForUser($request);
 
@@ -28,6 +30,7 @@ class UserController extends Controller
         return response()->json($data, 200);
     }
 
+    /* Delete User Account */
     public function deleteUser($id){
         $oldData = User::where("id", $id)->first();
         $dbImage = $oldData->image;
@@ -40,6 +43,7 @@ class UserController extends Controller
         return response()->json(["status" => "Delete success"], 200);
     }
 
+    /* Change User Role */
     public function changeRole($id, Request $request){
         User::where("id", $id)->update(["role"=> $request->newRole]);
         $user = User::where("id", $id)->first();
@@ -48,6 +52,7 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
+    /* Change User Password */
     public function changePassword(Request $request){
         $user = User::where("id", $request->id)->first();
 
@@ -62,6 +67,7 @@ class UserController extends Controller
         ]);
     }
 
+    /* Request Data For User Data Update */
     private function requestDataForUser($request){
         return [
             "name" => $request->name,

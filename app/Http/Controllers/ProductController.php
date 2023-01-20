@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    /* Get All Products */
     public function getAllProducts(){
         $products = Product::select('products.*', 'categories.title as category_title')
                             ->leftJoin('categories', 'products.category_id', 'categories.id')
@@ -22,6 +23,7 @@ class ProductController extends Controller
         return response()->json($products, 200);
     }
 
+    /* Create New Product */
     public function createProduct(Request $request){
         $product = $this->requestDataForProduct($request);
 
@@ -42,6 +44,7 @@ class ProductController extends Controller
         return response()->json($data, 200);
     }
 
+    /* Delete Product */
     public function deleteProduct($id){
         $product = Product::where("id", $id)->first();
         $db_image = $product->image;
@@ -51,11 +54,13 @@ class ProductController extends Controller
         return response()->json(['status' => 'delete success'], 200);
     }
 
+    /* Get Product Data to Update */
     public function getProductDataForUpdate($id){
         $product = Product::where('id', $id)->first();
         return response()->json($product, 200);
     }
 
+    /* Update Product */
     public function updateProduct($id, Request $request){
         $product = $this->requestDataForProduct($request);
 
@@ -83,17 +88,20 @@ class ProductController extends Controller
         return response()->json($data, 200);
     }
 
+    /* Create New Category */
     public function createCategory(Request $request){
         $newCategory = Category::create(['title' => $request->title]);
         $data = Category::where('id', $newCategory->id)->first();
         return response()->json($data, 200);
     }
 
+    /* Get All Categories */
     public function getAllCategories(){
         $categories = Category::get();
         return response()->json($categories, 200);
     }
 
+    /* Delete Category */
     public function deleteCategory($id){
         Category::where('id', $id)->delete();
         return response()->json([
@@ -101,6 +109,7 @@ class ProductController extends Controller
         ], 200);
     }
 
+    /* Update Category */
     public function updateCategory($id, Request $request){
         Category::where('id', $id)->update([
             'title' => $request->title
@@ -110,6 +119,7 @@ class ProductController extends Controller
         return response()->json($data, 200);
     }
 
+    /* Request Data For Product Create and Update */
     private function requestDataForProduct($request){
         return [
             'title' => $request->title,
