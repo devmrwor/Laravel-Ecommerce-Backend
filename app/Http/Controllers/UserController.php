@@ -6,17 +6,36 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
-{   
+{
     /* Get All Users */
-    public function getAllUsers(){
-        $users = User::get();
-        foreach($users as $user){
-            $user["createdAt"] = $user->created_at->format('M d, Y - h:s A');
-            $user["updatedAt"] = $user->updated_at->format('M d, Y - h:s A');
-        }
-        return response()->json($users, 200);
+    public function getAllAdmins(){
+        $admins = User::where('role', 'admin')->orderBy('created_at', 'desc')->get();
+
+        return response()->json($admins, 200);
+    }
+
+    /* Get All Customers */
+    public function getAllCustomers(){
+        $customers = User::when(request('searchKey'), function($query){
+                                $query->orWhere('name', 'like', '%'.request('searchKey').'%')
+                                      ->orWhere('email', 'like', '%'.request('searchKey').'%')
+                                      ->orWhere('phone', 'like', '%'.request('searchKey').'%');
+                            })
+                            ->whereRole('customer')
+                            ->orderBy('created_at', 'desc')
+                            ->paginate(5);
+
+        return response()->json($customers, 200);
+    }
+
+    /* Get My Profile */
+    public function getMyProfile($id){
+        $myProfile = User::find($id);
+
+        return response()->json($myProfile, 200);
     }
 
     /* Update User Data */
@@ -24,9 +43,7 @@ class UserController extends Controller
         $user = $this->requestDataForUser($request);
 
         User::where("id", $id)->update($user);
-        $data = User::where("id", $id)->first();
-        $data["createdAt"] = $data->created_at->format('M d, Y - h:s A');
-        $data["updatedAt"] = $data->updated_at->format('M d, Y - h:s A');
+        $data = User::find($id);
         return response()->json($data, 200);
     }
 
@@ -44,11 +61,11 @@ class UserController extends Controller
     }
 
     /* Change User Role */
-    public function changeRole($id, Request $request){
-        User::where("id", $id)->update(["role"=> $request->newRole]);
-        $user = User::where("id", $id)->first();
-        $user["createdAt"] = $user->created_at->format('M d, Y - h:s A');
-        $user["updatedAt"] = $user->updated_at->format('M d, Y - h:s A');
+    public function changeRole(Request $request){
+        User::where("id", $request->id)->update(["role"=> $request->newRole]);
+        $user = User::where("id", $request->id)->first();
+        $user["createdAt"] = $user->created_at->diffForHumans();
+        $user["updatedAt"] = $user->updated_at->diffForHumans();
         return response()->json($user, 200);
     }
 
@@ -64,6 +81,10 @@ class UserController extends Controller
 
         User::where("id", $request->id)->update([
             'password' => Hash::make($request->newPassword)
+        ]);
+
+        return response()->json([
+            "message" => "success"
         ]);
     }
 

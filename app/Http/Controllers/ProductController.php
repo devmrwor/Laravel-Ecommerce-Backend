@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,12 +11,41 @@ class ProductController extends Controller
     /* Get All Products */
     public function getAllProducts(){
         $products = Product::select('products.*', 'categories.title as category_title')
+                            ->when(request("searchKey"), function($query){
+                                $query->orWhere('products.title', 'like', '%'.request('searchKey').'%')
+                                      ->orWhere('categories.title', 'like', '%'.request('searchKey').'%')
+                                      ->orWhere('products.price', 'like', '%'.request('searchKey').'%')
+                                      ->orWhere('products.count', 'like', '%'.request('searchKey').'%');
+                            })
                             ->leftJoin('categories', 'products.category_id', 'categories.id')
-                            ->get();
+                            ->orderBy("created_at", "desc")
+                            ->paginate(4);
 
         for($i = 0; $i < count($products); $i++){
-            $products[$i]["createdAt"] = $products[$i]->created_at->format('M d, Y - h:s A');
-            $products[$i]["updatedAt"] = $products[$i]->updated_at->format('M d, Y - h:s A');
+            $products[$i]["createdAt"] = $products[$i]->created_at->diffForHumans();
+            $products[$i]["updatedAt"] = $products[$i]->updated_at->diffForHumans();
+        }
+
+        return response()->json($products, 200);
+    }
+
+    /* Filter Products By Category */
+    public function filterProductsByCategory($id){
+        $products = Product::select('products.*', 'categories.title as category_title')
+                            ->when(request("searchKey"), function($query){
+                                $query->orWhere('products.title', 'like', '%'.request('searchKey').'%')
+                                      ->orWhere('categories.title', 'like', '%'.request('searchKey').'%')
+                                      ->orWhere('products.price', 'like', '%'.request('searchKey').'%')
+                                      ->orWhere('products.count', 'like', '%'.request('searchKey').'%');
+                            })
+                            ->leftJoin('categories', 'products.category_id', 'categories.id')
+                            ->where('category_id', $id)
+                            ->orderBy("created_at", "desc")
+                            ->paginate(4);
+
+        for($i = 0; $i < count($products); $i++){
+            $products[$i]["createdAt"] = $products[$i]->created_at->diffForHumans();
+            $products[$i]["updatedAt"] = $products[$i]->updated_at->diffForHumans();
         }
 
         return response()->json($products, 200);
@@ -28,18 +56,18 @@ class ProductController extends Controller
         $product = $this->requestDataForProduct($request);
 
         $file_name = uniqid().$request->file('image')->getClientOriginalName();
-        $request->file('image')->storeAs('public', $file_name);
+        $request->file('image')->storeAs('public/products', $file_name);
         $product['image'] = $file_name;
 
         $newProduct = Product::create($product);
         $allData = Product::select('products.*', 'categories.title as category_title')
                         ->leftJoin('categories', 'products.category_id', 'categories.id')
                         ->get();
-        
+
         $data = $allData->where("id", $newProduct->id)->first();
 
-        $data["createdAt"] = $data->created_at->format('M d, Y - h:s A');
-        $data["updatedAt"] = $data->updated_at->format('M d, Y - h:s A');
+        $data["createdAt"] = $data->created_at->diffForHumans();
+        $data["updatedAt"] = $data->updated_at->diffForHumans();
 
         return response()->json($data, 200);
     }
@@ -61,61 +89,32 @@ class ProductController extends Controller
     }
 
     /* Update Product */
-    public function updateProduct($id, Request $request){
+    public function updateProduct(Request $request){
         $product = $this->requestDataForProduct($request);
 
         if($request->hasFile('image')){
-            $dbData = Product::where('id', $id)->first();
+            $dbData = Product::where('id', $request->id)->first();
             $dbName = $dbData->image;
-            Storage::delete('public/'.$dbName);
+            Storage::delete('public/products/'.$dbName);
 
             $file_name = uniqid().$request->file('image')->getClientOriginalName();
-            $request->file('image')->storeAs('public', $file_name);
+            $request->file('image')->storeAs('public/products', $file_name);
             $product["image"] = $file_name;
+            // return response()->json($request, 200);
         }
 
-        Product::where('id', $id)->update($product);
-        $updatedData = Product::where('id', $id)->first();
+
+        Product::where('id', $request->id)->update($product);
+        $updatedData = Product::where('id', $request->id)->first();
         $allData = Product::select('products.*', 'categories.title as category_title')
                         ->leftJoin('categories', 'products.category_id', 'categories.id')
                         ->get();
-        
+
         $data = $allData->where("id", $updatedData->id)->first();
 
-        $data["createdAt"] = $data->created_at->format('M d, Y - h:s A');
-        $data["updatedAt"] = $data->updated_at->format('M d, Y - h:s A');
+        $data["createdAt"] = $data->created_at->diffForHumans();
+        $data["updatedAt"] = $data->updated_at->diffForHumans();
 
-        return response()->json($data, 200);
-    }
-
-    /* Create New Category */
-    public function createCategory(Request $request){
-        $newCategory = Category::create(['title' => $request->title]);
-        $data = Category::where('id', $newCategory->id)->first();
-        return response()->json($data, 200);
-    }
-
-    /* Get All Categories */
-    public function getAllCategories(){
-        $categories = Category::get();
-        return response()->json($categories, 200);
-    }
-
-    /* Delete Category */
-    public function deleteCategory($id){
-        Category::where('id', $id)->delete();
-        return response()->json([
-            'status' => 'delete success'
-        ], 200);
-    }
-
-    /* Update Category */
-    public function updateCategory($id, Request $request){
-        Category::where('id', $id)->update([
-            'title' => $request->title
-        ]);
-
-        $data = Category::where('id', $id)->first();
         return response()->json($data, 200);
     }
 

@@ -35,8 +35,8 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password'])
         ]);
 
-        $user["createdAt"] = $user->created_at->format('M d, Y - h:s A');
-        $user["updatedAt"] = $user->updated_at->format('M d, Y - h:s A');
+        $user["createdAt"] = $user->created_at->diffForHumans();
+        $user["updatedAt"] = $user->updated_at->diffForHumans();
         $token = $user->createToken(time())->plainTextToken;
 
         return response()->json([
@@ -66,8 +66,8 @@ class AuthController extends Controller
             ]);
         }
 
-        $user["createdAt"] = $user->created_at->format('M d, Y - h:s A');
-        $user["updatedAt"] = $user->updated_at->format('M d, Y - h:s A');
+        $user["createdAt"] = $user->created_at->diffForHumans();
+        $user["updatedAt"] = $user->updated_at->diffForHumans();
         $token = $user->createToken(time())->plainTextToken;
 
         return response()->json([
