@@ -1,18 +1,24 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
 
 class UserController extends Controller
 {
     /* Get All Users */
     public function getAllAdmins(){
         $admins = User::where('role', 'admin')->orderBy('created_at', 'desc')->get();
+
+        for($i = 0; $i < count($admins); $i++){
+            $admins[$i]["createdAt"] = $admins[$i]->created_at->diffForHumans();
+            $admins[$i]["updatedAt"] = $admins[$i]->updated_at->diffForHumans();
+        }
 
         return response()->json($admins, 200);
     }
@@ -27,6 +33,11 @@ class UserController extends Controller
                             ->whereRole('customer')
                             ->orderBy('created_at', 'desc')
                             ->paginate(5);
+
+        // for($i = 0; $i < count($customers["data"]); $i++){
+        //     $customers["data"][$i]["createdAt"] = $customers["data"][$i]->created_at->diffForHumans();
+        //     $customers["data"][$i]["updatedAt"] = $customers["data"][$i]->updated_at->diffForHumans();
+        // }
 
         return response()->json($customers, 200);
     }

@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    /* Register New Account */
-    public function register(Request $request){
+    /* Register New Admin Account */
+    public function adminRegister(Request $request){
         $validated = $request->validate([
             'name' => 'required|string|max:15',
             'email' => 'required|string|unique:users,email',
@@ -35,13 +35,33 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password'])
         ]);
 
-        $user["createdAt"] = $user->created_at->diffForHumans();
-        $user["updatedAt"] = $user->updated_at->diffForHumans();
-        $token = $user->createToken(time())->plainTextToken;
+        $user["token"] = $user->createToken(time())->plainTextToken;
 
         return response()->json([
             'user' => $user,
-            'token' => $token,
+        ], 200);
+    }
+
+    /* Register New Customer Account */
+    public function customerRegister(Request $request){
+        $validated = $request->validate([
+            'name' => 'required|string|max:15',
+            'email' => 'required|string|unique:users,email',
+            'role' => 'required|string',
+            'password' => 'required|string|confirmed'
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'role' => $validated['role'],
+            'password' => Hash::make($validated['password'])
+        ]);
+
+        $user["token"] = $user->createToken(time())->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
         ], 200);
     }
 
@@ -49,35 +69,33 @@ class AuthController extends Controller
     public function login(Request $request){
         $validated = $request->validate([
             'email' => 'required|string',
-            'password' => 'required|string'
+            'password' => 'required|string',
+            'role' => 'required'
         ]);
 
-        $user = User::where("email", $request->email)->first();
+        $user = User::where("email", $validated['email'])->first();
 
-        if(!$user || !Hash::check($request->password, $user->password)){
+        if(!$user || !Hash::check($validated['password'], $user->password)){
             return response()->json([
                 "message" => "The credentials does not match."
             ]);
         }
 
-        if($user->role === "customer"){
+        if($user->role !== $validated['role']){
             return response()->json([
-                "message" => "You are not admin."
+                "message" => "You are not ".$user->role
             ]);
         }
 
-        $user["createdAt"] = $user->created_at->diffForHumans();
-        $user["updatedAt"] = $user->updated_at->diffForHumans();
-        $token = $user->createToken(time())->plainTextToken;
+        $user["token"] = $user->createToken(time())->plainTextToken;
 
         return response()->json([
             'user' => $user,
-            'token' => $token,
         ], 200);
     }
 
     /* User Logout */
-    public function logout(Request $request){
+    public function logout(){
         Auth::user()->tokens()->delete();
         return response()->json([
             'message' => 'Logged out'

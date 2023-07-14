@@ -10,8 +10,6 @@ class Category extends Model
     use HasFactory;
 
     Protected $fillable = [
-        "title",
-        "product_count",
-        "total_sale"
+        "title"
     ];
 }

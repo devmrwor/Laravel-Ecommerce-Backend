@@ -20,8 +20,6 @@ return new class extends Migration
             $table->integer('price');
             $table->longText('description');
             $table->string('image');
-            $table->integer('rate')->default(0);
-            $table->integer('count')->default(0);
             $table->timestamps();
         });
     }

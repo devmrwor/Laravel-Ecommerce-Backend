@@ -15,7 +15,5 @@ class Product extends Model
         "price",
         "description",
         "image",
-        "rate",
-        "count"
     ];
 }
