@@ -126,6 +126,7 @@ class ProductController extends Controller
             'title' => $request->title,
             'category_id' => $request->category,
             'price' => $request->price,
+            'count' => $request->count,
             'description' => $request->description,
         ];
     }

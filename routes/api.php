@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
 
 use App\Http\Controllers\Customer\ProfileController;
+use App\Http\Controllers\Customer\ShopController;
+use App\Http\Controllers\Customer\ItemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,10 +74,29 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::controller(ItemController::class)->prefix('item')->group(function(){
+    Route::get('getAllItems',                           'getAllItems');
+    Route::get('getSearchItems/{searchKey}',            'getAllItems');
+    Route::get('getAllCategories',                      'getAllCategories');
+    Route::get('filterItemsByCategory/{id}',            'filterItemsByCategory');
+    Route::get('getLatestItems',                        'getLatestItems');
+    Route::get('getPopularItems',                       'getPopularItems');
+    Route::get('getBestRatingItems',                    'getBestRatingItems');
+});
 
+Route::middleware('auth:sanctum')->group(function(){
     Route::controller(ProfileController::class)->prefix('user')->group(function(){
         Route::get('getProfileData',                    'getProfileData');
+    });
+
+    Route::controller(ShopController::class)->prefix('shop')->group(function(){
+        Route::post('addItemsToCart',                    'addItemsToCart');
+        Route::get('getAllCartItems',                    'getAllCartItems');
+        Route::put('/updateCartItemQuantity',            'updateCartItemQuantity');
+        Route::delete('/deleteCartItem/{id}',            'deleteCartItem');
+        Route::post('/orderCheckout',                    'orderCheckout');
+        Route::get('/getAllOrders',                      'getAllOrders');
+        Route::get('/getOrderDetail/{orderCode}',        'getOrderDetail');
     });
 });
 
