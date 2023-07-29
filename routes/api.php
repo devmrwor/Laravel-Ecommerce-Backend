@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController;
@@ -28,6 +29,11 @@ Route::controller(AuthController::class)->prefix('auth')->group(function(){
     Route::post('/admin/register',                      'adminRegister');
     Route::post('/register',                            'customerRegister');
     Route::post('/login',                               'login');
+
+    Route::get('/{provider}/redirect',                  'providerLoginRedirect');
+    Route::get('/{provider}/callback',                  'providerLoginCallback');
+    Route::get('/provider/login/{email}',               'providerLogin');
+
     Route::get('/logout',                               'logout')->middleware('auth:sanctum');
 
 });

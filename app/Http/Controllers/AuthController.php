@@ -6,6 +6,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Redirect;
 
 class AuthController extends Controller
 {
@@ -100,5 +103,48 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Logged out'
         ]);
+    }
+
+    /* Login With Provider Redirect */
+    public function providerLoginRedirect($provider){
+        return Socialite::driver($provider)->stateless()->redirect();
+    }
+
+    /* Login With Provider Callback */
+    public function providerLoginCallback($provider){
+        $providerUser = Socialite::driver($provider)->stateless()->user();
+
+        $db_user = User::where('email', $providerUser->email)->first();
+
+        if($db_user){
+            User::where('email', $providerUser->email)->delete();
+        }
+
+        $user = User::create([
+            'name' => $providerUser->name,
+            'email' => $providerUser->email,
+            'provider_token' => $providerUser->token,
+            'avatar' => $providerUser->avatar,
+            'provider' => $provider,
+            'provider_id' => $providerUser->id,
+            'role' => 'customer'
+        ]);
+
+        Session::put('email', $providerUser->email);
+
+        return Redirect::to('http://localhost:5173/login?email='.$providerUser->email);
+    }
+
+    /* Provider Login */
+    public function providerLogin($email){
+        if(Session::get('email', $email)){
+            $user = User::where('email', $email)->first();
+
+            $user["token"] = $user->createToken(time())->plainTextToken;
+
+            Auth::login($user);
+
+            return response()->json(['user' => $user]);
+        }
     }
 }
