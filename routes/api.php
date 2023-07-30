@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
+
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -103,6 +105,10 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::post('/orderCheckout',                    'orderCheckout');
         Route::get('/getAllOrders',                      'getAllOrders');
         Route::get('/getOrderDetail/{orderCode}',        'getOrderDetail');
+    });
+
+    Route::controller(ContactController::class)->prefix('contact')->group(function(){
+        Route::post('contactAdminTeam',                   'contactAdminTeam');
     });
 });
 
