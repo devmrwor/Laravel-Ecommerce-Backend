@@ -49,7 +49,7 @@ class AuthController extends Controller
     public function customerRegister(Request $request){
         $validated = $request->validate([
             'name' => 'required|string|max:15',
-            'email' => 'required|string|unique:users,email',
+            'email' => 'required|email|string|unique:users,email',
             'role' => 'required|string',
             'password' => 'required|string|confirmed'
         ]);
@@ -71,7 +71,7 @@ class AuthController extends Controller
     /* User Login */
     public function login(Request $request){
         $validated = $request->validate([
-            'email' => 'required|string',
+            'email' => 'required|string|email',
             'password' => 'required|string',
             'role' => 'required'
         ]);

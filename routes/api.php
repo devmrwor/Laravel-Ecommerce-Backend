@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ResetPasswordController;
 
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController;
@@ -83,23 +84,28 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 });
 
 Route::controller(ItemController::class)->prefix('item')->group(function(){
-    Route::get('getAllItems',                           'getAllItems');
-    Route::get('getSearchItems/{searchKey}',            'getAllItems');
-    Route::get('getAllCategories',                      'getAllCategories');
-    Route::get('filterItemsByCategory/{id}',            'filterItemsByCategory');
-    Route::get('getLatestItems',                        'getLatestItems');
-    Route::get('getPopularItems',                       'getPopularItems');
-    Route::get('getBestRatingItems',                    'getBestRatingItems');
+    Route::get('/getAllItems',                           'getAllItems');
+    Route::get('/getSearchItems/{searchKey}',            'getAllItems');
+    Route::get('/getAllCategories',                      'getAllCategories');
+    Route::get('/filterItemsByCategory/{id}',            'filterItemsByCategory');
+    Route::get('/getLatestItems',                        'getLatestItems');
+    Route::get('/getPopularItems',                       'getPopularItems');
+    Route::get('/getBestRatingItems',                    'getBestRatingItems');
+});
+
+Route::controller(ResetPasswordController::class)->prefix('account')->group(function(){
+    Route::post('emailVerification',                     'emailVerification');
+    Route::post('resetPassword',                         'resetPassword');
 });
 
 Route::middleware('auth:sanctum')->group(function(){
     Route::controller(ProfileController::class)->prefix('user')->group(function(){
-        Route::get('getProfileData',                    'getProfileData');
+        Route::get('/getProfileData',                    'getProfileData');
     });
 
     Route::controller(ShopController::class)->prefix('shop')->group(function(){
-        Route::post('addItemsToCart',                    'addItemsToCart');
-        Route::get('getAllCartItems',                    'getAllCartItems');
+        Route::post('/addItemsToCart',                   'addItemsToCart');
+        Route::get('/getAllCartItems',                   'getAllCartItems');
         Route::put('/updateCartItemQuantity',            'updateCartItemQuantity');
         Route::delete('/deleteCartItem/{id}',            'deleteCartItem');
         Route::post('/orderCheckout',                    'orderCheckout');
@@ -108,7 +114,7 @@ Route::middleware('auth:sanctum')->group(function(){
     });
 
     Route::controller(ContactController::class)->prefix('contact')->group(function(){
-        Route::post('contactAdminTeam',                   'contactAdminTeam');
+        Route::post('/contactAdminTeam',                  'contactAdminTeam');
     });
 });
 

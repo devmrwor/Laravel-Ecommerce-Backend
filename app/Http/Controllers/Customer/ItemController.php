@@ -50,7 +50,7 @@ class ItemController extends Controller
 
     // Get Popular Items
     public function getPopularItems(){
-        $date = Carbon::now()->subDays(7);
+        $date = Carbon::now()->subDays(30);
 
         $data = OrderList::where('created_at', '>=', $date)->get();
 
