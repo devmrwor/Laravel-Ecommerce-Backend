@@ -83,4 +83,10 @@ class ItemController extends Controller
 
     //     return response()->json(['items' => $orders]);
     // }
+
+    public function getItem($id){
+        $item = Product::with('category')->where('id', $id)->first();
+
+        return response()->json(['item' => $item]);
+    }
 }

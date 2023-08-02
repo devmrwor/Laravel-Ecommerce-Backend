@@ -116,17 +116,15 @@ class AuthController extends Controller
 
         $db_user = User::where('email', $providerUser->email)->first();
 
-        if($db_user){
-            User::where('email', $providerUser->email)->delete();
-        }
-
-        $user = User::create([
+        $user = User::updateOrCreate([
+            'provider_id' => $providerUser->id,
+        ],
+        [
             'name' => $providerUser->name,
             'email' => $providerUser->email,
             'provider_token' => $providerUser->token,
             'avatar' => $providerUser->avatar,
             'provider' => $provider,
-            'provider_id' => $providerUser->id,
             'role' => 'customer'
         ]);
 

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\OrderList;
 use App\Models\Order;
+use Carbon\Carbon;
 
 class ShopController extends Controller
 {
@@ -20,14 +21,14 @@ class ShopController extends Controller
         if($oldCartItem){
             Cart::where('user_id', Auth::user()->id)
                 ->where('product_id', $request->id)
-                ->update(['quantity' => $oldCartItem->quantity+1]);
+                ->update(['quantity' => $oldCartItem->quantity+$request->quantity]);
 
             $data = Cart::with('product')
                         ->where('user_id', Auth::user()->id)
                         ->where('product_id', $request->id)
                         ->first();
 
-            return response()->json(['item' => $data]);
+            return response()->json(['item' => $data, 'status' => 'fails']);
         }
 
         Cart::create([
@@ -42,7 +43,7 @@ class ShopController extends Controller
                         ->first();
 
         if($data){
-            return response()->json(['item' => $data]);
+            return response()->json(['item' => $data, 'status' => 'created']);
         }
     }
 
@@ -99,10 +100,10 @@ class ShopController extends Controller
 
         if($order){
             Cart::where('user_id', Auth::user()->id)->delete();
-            return response()->json(['message' => 'success']);
+            return response()->json(['status' => 'success']);
         }
 
-        return response()->json(['message' => 'fail']);
+        return response()->json(['status' => 'fail']);
     }
 
     public function getAllOrders(){
@@ -124,5 +125,40 @@ class ShopController extends Controller
                         ->get();
 
         return response()->json(['items' => $data]);
+    }
+
+    public function buyNow(Request $request){
+        $validated = $request->validate([
+            'phone' => 'required|string',
+            'address' => 'required|string',
+            'product_id' => 'required',
+            'quantity' => 'required',
+            'total' => 'required'
+        ]);
+
+        $orderCode = Carbon::now()->format('YmdHi').rand(10, 99);
+
+        OrderList::create([
+            'user_id' => Auth::user()->id,
+            'product_id' => $validated['product_id'],
+            'quantity' => $validated['quantity'],
+            'total' => $validated['total'],
+            'order_code' => $orderCode,
+        ]);
+
+        $order = Order::create([
+            'user_id' => Auth::user()->id,
+            'order_code' => $orderCode,
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
+            'total_price' => $validated['total'],
+            'status' => 0
+        ]);
+
+        if($order){
+            return response()->json(['status' => 'success']);
+        }
+
+        return response()->json(['status' => 'fail']);
     }
 }

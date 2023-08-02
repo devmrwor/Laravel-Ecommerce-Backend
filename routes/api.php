@@ -91,6 +91,7 @@ Route::controller(ItemController::class)->prefix('item')->group(function(){
     Route::get('/getLatestItems',                        'getLatestItems');
     Route::get('/getPopularItems',                       'getPopularItems');
     Route::get('/getBestRatingItems',                    'getBestRatingItems');
+    Route::get('/getItem/{id}',                          'getItem');
 });
 
 Route::controller(ResetPasswordController::class)->prefix('account')->group(function(){
@@ -111,6 +112,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::post('/orderCheckout',                    'orderCheckout');
         Route::get('/getAllOrders',                      'getAllOrders');
         Route::get('/getOrderDetail/{orderCode}',        'getOrderDetail');
+        Route::post('/buyNow',                           'buyNow');
     });
 
     Route::controller(ContactController::class)->prefix('contact')->group(function(){
