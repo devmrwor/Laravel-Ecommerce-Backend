@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {
+    /** Send Contact Message To Admin Team */
     public function contactAdminTeam(Request $request){
         $validated = $this->contactValidation($request);
 
@@ -29,6 +30,7 @@ class ContactController extends Controller
         return response()->json(['status' => 'fails']);
     }
 
+    /** Check Contact Form Validation */
     protected function contactValidation($request){
         $validated = $request->validate([
             'name' => 'required | min:5',

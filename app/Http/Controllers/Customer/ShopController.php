@@ -106,6 +106,7 @@ class ShopController extends Controller
         return response()->json(['status' => 'fail']);
     }
 
+    /**Get All Orders */
     public function getAllOrders(){
         $data = Order::with(['order_list' => function($query) {
                         $query->select('order_code', 'quantity');
@@ -117,6 +118,7 @@ class ShopController extends Controller
         return response()->json(['orders' => $data]);
     }
 
+    /** Get Order Detail */
     public function getOrderDetail($orderCode){
         $data = OrderList::with([ "product" => function($query){
                             $query->select('id', 'title', 'price');
@@ -126,7 +128,7 @@ class ShopController extends Controller
 
         return response()->json(['items' => $data]);
     }
-
+     /** Order Item Directly */
     public function buyNow(Request $request){
         $validated = $request->validate([
             'phone' => 'required|string',

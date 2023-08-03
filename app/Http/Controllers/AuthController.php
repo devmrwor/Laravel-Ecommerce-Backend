@@ -6,9 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Redirect;
 
 class AuthController extends Controller
 {
@@ -22,13 +19,7 @@ class AuthController extends Controller
             'password' => 'required|string|confirmed'
         ]);
 
-        $old_user = User::where('email', $validated['email'])->first();
-
-        if($old_user){
-            return response()->json([
-                "message" => "This email has already been taken."
-            ]);
-        }
+        $this->checkEmailExist($validated['email']);
 
         $user = User::create([
             'name' => $validated['name'],
@@ -53,6 +44,8 @@ class AuthController extends Controller
             'role' => 'required|string',
             'password' => 'required|string|confirmed'
         ]);
+
+        $this->checkEmailExist($validated['email']);
 
         $user = User::create([
             'name' => $validated['name'],
@@ -105,44 +98,14 @@ class AuthController extends Controller
         ]);
     }
 
-    /* Login With Provider Redirect */
-    public function providerLoginRedirect($provider){
-        return Socialite::driver($provider)->stateless()->redirect();
-    }
+    /* Check Email Already Exist Or Not */
+    protected function checkEmailExist($email){
+        $old_user = User::where('email', $email)->first();
 
-    /* Login With Provider Callback */
-    public function providerLoginCallback($provider){
-        $providerUser = Socialite::driver($provider)->stateless()->user();
-
-        $db_user = User::where('email', $providerUser->email)->first();
-
-        $user = User::updateOrCreate([
-            'provider_id' => $providerUser->id,
-        ],
-        [
-            'name' => $providerUser->name,
-            'email' => $providerUser->email,
-            'provider_token' => $providerUser->token,
-            'avatar' => $providerUser->avatar,
-            'provider' => $provider,
-            'role' => 'customer'
-        ]);
-
-        Session::put('email', $providerUser->email);
-
-        return Redirect::to('http://localhost:5173/login?email='.$providerUser->email);
-    }
-
-    /* Provider Login */
-    public function providerLogin($email){
-        if(Session::get('email', $email)){
-            $user = User::where('email', $email)->first();
-
-            $user["token"] = $user->createToken(time())->plainTextToken;
-
-            Auth::login($user);
-
-            return response()->json(['user' => $user]);
+        if($old_user){
+            return response()->json([
+                "message" => "This email has already been taken."
+            ]);
         }
     }
 }

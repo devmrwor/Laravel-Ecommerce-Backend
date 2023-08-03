@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\ProviderLoginController;
 
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController;
@@ -26,28 +27,29 @@ use App\Http\Controllers\Customer\ItemController;
 |
 */
 
-/* Register and LogIn , no need token */
 
+/* Authentication Section */
 Route::controller(AuthController::class)->prefix('auth')->group(function(){
     Route::post('/admin/register',                      'adminRegister');
     Route::post('/register',                            'customerRegister');
     Route::post('/login',                               'login');
 
-    Route::get('/{provider}/redirect',                  'providerLoginRedirect');
-    Route::get('/{provider}/callback',                  'providerLoginCallback');
-    Route::get('/provider/login/{email}',               'providerLogin');
-
     Route::get('/logout',                               'logout')->middleware('auth:sanctum');
 
 });
 
-/* can call these route after login , token need */
+/* Provider Login Section */
+Route::controller(ProviderLoginController::class)->prefix('auth')->group(function(){
+    Route::get('/{provider}/redirect',                  'providerLoginRedirect');
+    Route::get('/{provider}/callback',                  'providerLoginCallback');
+    Route::get('/provider/login/{email}',               'providerLogin');
+});
 
+/** For Admin Back Office */
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
-     /* Product and Category */
+     /* Category Section */
      Route::controller(CategoryController::class)->prefix('category')->group(function(){
-        /* Category Section */
         Route::post('/createCategory',                  'createCategory');
         Route::get('/getAllCategories',                 'getAllCategories');
         Route::delete('/deleteCategory/{id}',           'deleteCategory');
@@ -57,9 +59,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::get('/getAllCategories/{searchKey}',     'getAllCategories');
     });
 
-    /* Product and Category */
+    /* Product Section */
     Route::controller(ProductController::class)->prefix('product')->group(function(){
-        /* Product Section */
         Route::get('/getAllProducts',                   'getAllProducts');
         Route::post('/createProduct',                   'createProduct');
         Route::delete('/deleteProduct/{id}',            'deleteProduct');
@@ -69,7 +70,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::get('/filterProducts/{id}',              'filterProductsByCategory');
     });
 
-    /* User Section such as customers, admins... */
+    /* User Section */
     Route::controller(UserController::class)->prefix('user')->group(function(){
         Route::get('/getAllAdmins',                     'getAllAdmins');
         Route::get('/getAllCustomers',                  'getAllCustomers');
@@ -83,6 +84,10 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
 });
 
+
+/** For Customer Shopping App */
+
+/** Items Section */
 Route::controller(ItemController::class)->prefix('item')->group(function(){
     Route::get('/getAllItems',                           'getAllItems');
     Route::get('/getSearchItems/{searchKey}',            'getAllItems');
@@ -94,16 +99,21 @@ Route::controller(ItemController::class)->prefix('item')->group(function(){
     Route::get('/getItem/{id}',                          'getItem');
 });
 
+/** Forgot Password, Email Verification, Reset Password */
 Route::controller(ResetPasswordController::class)->prefix('account')->group(function(){
     Route::post('emailVerification',                     'emailVerification');
     Route::post('resetPassword',                         'resetPassword');
 });
 
+/** For Auth Customer */
 Route::middleware('auth:sanctum')->group(function(){
+
+    /** Customer Profile Section */
     Route::controller(ProfileController::class)->prefix('user')->group(function(){
         Route::get('/getProfileData',                    'getProfileData');
     });
 
+    /** Customer Shopping Section */
     Route::controller(ShopController::class)->prefix('shop')->group(function(){
         Route::post('/addItemsToCart',                   'addItemsToCart');
         Route::get('/getAllCartItems',                   'getAllCartItems');
@@ -115,6 +125,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::post('/buyNow',                           'buyNow');
     });
 
+    /** Contact To Admin Team Section */
     Route::controller(ContactController::class)->prefix('contact')->group(function(){
         Route::post('/contactAdminTeam',                  'contactAdminTeam');
     });

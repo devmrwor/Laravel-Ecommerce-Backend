@@ -40,6 +40,7 @@ class ResetPasswordController extends Controller
         return response()->json(['token' => $token]);
     }
 
+    /** Reset Password */
     public function resetPassword(Request $request){
         $validated = $request->validate([
             'token' => 'required | string',
